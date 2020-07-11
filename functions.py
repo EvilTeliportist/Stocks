@@ -7,9 +7,10 @@ def divide_chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def optionsCalculator(t, percent):
+def ironCondorAvgReturn(t, percent, pd):
+
     ticker = yf.Ticker(t)
-    hist = [i[3] for i in ticker.history(period='3mo').to_numpy()]
+    hist = [i[3] for i in ticker.history(period=pd).to_numpy()]
     current_price = [i[3] for i in ticker.history(period='1d').to_numpy()][0]
 
     calls = ticker.option_chain('2020-07-16').calls.to_dict()
@@ -67,7 +68,7 @@ def optionsCalculator(t, percent):
     chunks = list(divide_chunks(changes, 5))
     weekly = []
     for chunk in chunks:
-        weekly.append(sum(chunk))
+        weekly.append(abs(sum(chunk)))
 
     # Make Standard Deviation and Mean
     stdev = statistics.stdev(weekly)
@@ -86,13 +87,22 @@ def optionsCalculator(t, percent):
 
     average_total = average_loss + average_gain
 
-    print("Average Weekly Change of " + t + ": " + str(round(avg * 100, 2)) + "%")
-    print("Premium recieved to open position: $" + str(max_profit))
-
+    print(t + ": $" + str(current_price) + "  ------- IRON CONDOR")
+    print("     Spread Info")
+    print("         Call Bought: Strike of $" + str(high_call_strike) + " for $" + str(high_call_premium))
+    print("         Call Sold: Strike of $" + str(low_call_strike) + " for $" + str(low_call_premium))
+    print("         Put Sold: Strike of $" + str(high_put_strike) + " for $" + str(high_put_premium))
+    print("         Put Bought: Strike of $" + str(low_put_strike) + " for $" + str(low_put_premium))
+    print("\n     Average Weekly Change (" + pd + "): " + str(round(avg * 100, 2)) + "%")
+    print("     Percent Change to Lose: " + str(round(100 * lower_bound_percent, 2)) + "% or +" + str(round(100 * upper_bound_percent, 2)) + "%")
+    print("     Chance to lose: " + str(round(chance_of_loss * 100, 2)) + "%")
+    print("     Premium Recieved: $" + str(max_profit))
+    print("     Max Loss: $" + str(abs(round(max_loss, 2))))
+    print("     Average Return: $" + str(round(average_total, 2)))
+    print("     Percentage Kept: " + str(round(average_total * 100 / max_profit, 2)) + "%")
 
     return average_total
 
 
 
-#print("MSFT: $" + str(round(optionsCalculator('MSFT', 5), 2)))
-print("QQQ: $" + str(round(optionsCalculator("QQQ", 5), 2)))
+ironCondorAvgReturn('TSLA', 20, '3mo')
