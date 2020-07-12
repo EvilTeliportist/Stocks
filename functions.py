@@ -1,13 +1,18 @@
 import yfinance as yf
 import matplotlib.pyplot as plt
 import pandas as pd
-import math, statistics
+import math, statistics, datetime
+
+STOCKLIST = ['MSFT', 'BAC', 'SPY', 'DIS', 'AMD', 'T', 'WMT', 'AMZN',
+                    'NFLX', 'PFE', 'JPM', 'GOOGL', 'XOM', 'PEP', 'BA', 'WFC',
+                     'NVDA', 'GDX', 'XLF', 'UAL', 'XLE', 'BABA', 'INTC', 'KO',
+                      'HAL', 'GOLD', 'CVS', 'UNH', 'MCD', 'GS', 'C']
 
 def divide_chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def ironCondorAvgReturn(t, percent, pd):
+def ironCondorAvgReturn(t, percent, pd, can_print):
 
     ticker = yf.Ticker(t)
     hist = [i[3] for i in ticker.history(period=pd).to_numpy()]
@@ -42,10 +47,16 @@ def ironCondorAvgReturn(t, percent, pd):
     low_put_strike = puts['strike'][lowest_dif_put[1] - 1]
 
     # Get Premiums
-    low_call_premium = calls['ask'][lowest_dif_call[1]]
+    low_call_premium = calls['bid'][lowest_dif_call[1]]
     high_call_premium = calls['ask'][lowest_dif_call[1] + 1]
     low_put_premium = puts['ask'][lowest_dif_put[1] - 1]
-    high_put_premium = puts['ask'][lowest_dif_put[1]]
+    high_put_premium = puts['bid'][lowest_dif_put[1]]
+
+    # Get Volumes
+    low_call_vol = calls['volume'][lowest_dif_call[1]]
+    high_call_vol = calls['volume'][lowest_dif_call[1] + 1]
+    low_put_vol = puts['volume'][lowest_dif_put[1] - 1]
+    high_put_vol = puts['volume'][lowest_dif_put[1]]
 
     # Calculate Profits and Loss
     cost_to_open = low_call_premium + high_put_premium - low_put_premium - high_call_premium
@@ -87,22 +98,52 @@ def ironCondorAvgReturn(t, percent, pd):
 
     average_total = average_loss + average_gain
 
-    print(t + ": $" + str(current_price) + "  ------- IRON CONDOR")
-    print("     Spread Info")
-    print("         Call Bought: Strike of $" + str(high_call_strike) + " for $" + str(high_call_premium))
-    print("         Call Sold: Strike of $" + str(low_call_strike) + " for $" + str(low_call_premium))
-    print("         Put Sold: Strike of $" + str(high_put_strike) + " for $" + str(high_put_premium))
-    print("         Put Bought: Strike of $" + str(low_put_strike) + " for $" + str(low_put_premium))
-    print("\n     Average Weekly Change (" + pd + "): " + str(round(avg * 100, 2)) + "%")
-    print("     Percent Change to Lose: " + str(round(100 * lower_bound_percent, 2)) + "% or +" + str(round(100 * upper_bound_percent, 2)) + "%")
-    print("     Chance to lose: " + str(round(chance_of_loss * 100, 2)) + "%")
-    print("     Premium Recieved: $" + str(max_profit))
-    print("     Max Loss: $" + str(abs(round(max_loss, 2))))
-    print("     Average Return: $" + str(round(average_total, 2)))
-    print("     Percentage Kept: " + str(round(average_total * 100 / max_profit, 2)) + "%")
+    if can_print:
+        print(t + ": $" + str(current_price) + "  ------- IRON CONDOR")
+        print("     Spread Info")
+        print("         Call Bought: Strike of $" + str(high_call_strike) + " for $" + str(high_call_premium) + ", VOL: " + str(high_call_vol))
+        print("         Call Sold: Strike of $" + str(low_call_strike) + " for $" + str(low_call_premium) + ", VOL: " + str(low_call_vol))
+        print("         Put Sold: Strike of $" + str(high_put_strike) + " for $" + str(high_put_premium) + ", VOL: " + str(high_put_vol))
+        print("         Put Bought: Strike of $" + str(low_put_strike) + " for $" + str(low_put_premium) + ", VOL: " + str(low_put_vol))
+        print("\n     Average Weekly Change (" + pd + "): " + str(round(avg * 100, 2)) + "%")
+        print("     Percent Change to Lose: " + str(round(100 * lower_bound_percent, 2)) + "% or +" + str(round(100 * upper_bound_percent, 2)) + "%")
+        print("     Chance to lose: " + str(round(chance_of_loss * 100, 5)) + "%")
+        print("     Premium Recieved: $" + str(max_profit))
+        print("     Max Loss: $" + str(abs(round(max_loss, 2))))
+        print("     Average Return: $" + str(round(average_total, 5)))
+        print("     Percentage Kept: " + str(round(average_total * 100 / max_profit, 2)) + "%")
+        print("     Return on $1000 investment: " + str(round(math.floor(-1000 / max_loss) * average_total / 10, 2)) + "%")
 
-    return average_total
+    return [average_total, max_loss]
 
+def showPlot(t, r, pd):
 
+    profits = []
+    percent = []
+    for i in range(r):
+        try:
+            profits.append(ironCondorAvgReturn(t, i + 1, pd))
+            percent.append(i + 1)
+        except:
+            print('error')
+    plt.plot(percent, profits)
+    plt.show()
 
-ironCondorAvgReturn('TSLA', 20, '3mo')
+def runList(stocks_to_screen):
+    profits = []
+
+    for ticker in stocks_to_screen:
+        print(ticker)
+        for i in [5, 7]:
+            k = ironCondorAvgReturn(ticker, i, '3mo', False)
+            num_pos = math.floor(-1000 / k[1])
+            ret = num_pos * k[0]
+            profits.append([round(ret / 10, 3), i, ticker])
+
+    print(sorted(profits, key=lambda x: x[0]))
+
+def isMarketOpen():
+    d = datetime.datetime.now()
+    weekday = d.isoweekday() in range(1, 6)
+    hour = ((d.hour * 100) + d.minute) > 930 and d.hour < 16
+    return weekday and hour
