@@ -1,7 +1,8 @@
 import yfinance as yf
 import matplotlib.pyplot as plt
 import pandas as pd
-import math, statistics, datetime
+import math, datetime, statistics
+from scipy.stats import *
 
 STOCKLIST = ['MSFT', 'BAC', 'SPY', 'DIS', 'AMD', 'T', 'WMT', 'AMZN',
                     'NFLX', 'PFE', 'JPM', 'GOOGL', 'XOM', 'PEP', 'BA', 'WFC',
@@ -12,7 +13,7 @@ def divide_chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def ironCondorAvgReturn(t, percent, pd, can_print):
+def ironCondorAvgReturn(t, percent, pd, can_print, days_until_exp):
 
     ticker = yf.Ticker(t)
     hist = [i[3] for i in ticker.history(period=pd).to_numpy()]
@@ -77,16 +78,18 @@ def ironCondorAvgReturn(t, percent, pd, can_print):
         changes.append(change)
 
     chunks = list(divide_chunks(changes, 5))
+    if len(chunks[-1]) != 5:
+        chunks = chunks[:-1]
     weekly = []
     for chunk in chunks:
-        weekly.append(abs(sum(chunk)))
+        weekly.append(sum(chunk) * (days_until_exp / 5))
 
     # Make Standard Deviation and Mean
     stdev = statistics.stdev(weekly)
     avg = sum(weekly) / len(weekly)
 
     # Create Normal Distribution
-    dist = statistics.NormalDist(mu=avg, sigma=stdev)
+    dist = norm(avg, stdev)
 
     chance_of_lower = dist.cdf(lower_bound_percent)
     chance_of_higher = 1 - dist.cdf(upper_bound_percent)
@@ -99,15 +102,16 @@ def ironCondorAvgReturn(t, percent, pd, can_print):
     average_total = average_loss + average_gain
 
     if can_print:
-        print(t + ": $" + str(current_price) + "  ------- IRON CONDOR")
+        print(t + ": $" + str(round(current_price, 2)) + "  ------- IRON CONDOR")
         print("     Spread Info")
         print("         Call Bought: Strike of $" + str(high_call_strike) + " for $" + str(high_call_premium) + ", VOL: " + str(high_call_vol))
         print("         Call Sold: Strike of $" + str(low_call_strike) + " for $" + str(low_call_premium) + ", VOL: " + str(low_call_vol))
         print("         Put Sold: Strike of $" + str(high_put_strike) + " for $" + str(high_put_premium) + ", VOL: " + str(high_put_vol))
         print("         Put Bought: Strike of $" + str(low_put_strike) + " for $" + str(low_put_premium) + ", VOL: " + str(low_put_vol))
         print("\n     Average Weekly Change (" + pd + "): " + str(round(avg * 100, 2)) + "%")
+        print("     Standard Deviation: " + str(round(stdev * 100, 2)) + "%")
         print("     Percent Change to Lose: " + str(round(100 * lower_bound_percent, 2)) + "% or +" + str(round(100 * upper_bound_percent, 2)) + "%")
-        print("     Chance to lose: " + str(round(chance_of_loss * 100, 5)) + "%")
+        print("     Chance to lose: " + str(round(chance_of_loss * 100, 3)) + "%")
         print("     Premium Recieved: $" + str(max_profit))
         print("     Max Loss: $" + str(abs(round(max_loss, 2))))
         print("     Average Return: $" + str(round(average_total, 5)))
@@ -129,13 +133,13 @@ def showPlot(t, r, pd):
     plt.plot(percent, profits)
     plt.show()
 
-def runList(stocks_to_screen):
+def runList(stocks_to_screen, days_until_exp):
     profits = []
 
     for ticker in stocks_to_screen:
         print(ticker)
         for i in [5, 7]:
-            k = ironCondorAvgReturn(ticker, i, '3mo', False)
+            k = ironCondorAvgReturn(ticker, i, '3mo', False, days_until_exp)
             num_pos = math.floor(-1000 / k[1])
             ret = num_pos * k[0]
             profits.append([round(ret / 10, 3), i, ticker])
