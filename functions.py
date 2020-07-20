@@ -13,7 +13,8 @@ STOCKLIST = ['MSFT', 'BAC', 'SPY', 'DIS', 'AMD', 'T', 'WMT', 'AMZN',
              'DKNG', 'F', 'GM', 'NOK', 'SLV', 'AZN', 'V', 'JNJ', 'HD', 'CRM',
              'NKE', 'BP', 'PLUG']
 
-EARNINGS_WEEK = ['MSFT', 'AMD', 'INTC', 'GOOGL', 'KO', 'SNAP', 'T', 'TWTR']
+EARNINGS_WEEK = ['MSFT', 'AMD', 'INTC', 'GOOGL', 'KO', 'SNAP', 'T', 'TWTR',
+                'AZN', 'AMZN', 'UNH']
 
 def divide_chunks(l, n):
     for i in range(0, len(l), n):
@@ -132,7 +133,7 @@ def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, day
         print("     Percentage Kept: " + str(round(average_total * 100 / max_profit, 2)) + "%")
         print("     Return on investment: " + str(round(average_total * -100 / max_loss, 2)) + "%")
 
-    return [average_total, max_loss]
+    return {'Ticker': t, 'average_total': average_total, 'max_loss': max_loss, 'chance_of_loss': chance_of_loss}
 
 def showPlot(t, r, pd):
 
@@ -159,7 +160,7 @@ def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5, 7]):
             for i in widths:
                 try:
                     k = ironCondorAvgReturn(ticker, expdate, width = i, can_print = False, days_until_exp = days_until_exp)
-                    profits.append([round(k[0] * -100 / k[1], 2), i, ticker])
+                    profits.append([ticker, round(k['average_total'] * -100 / k['max_loss'], 2), i, k['chance_of_loss']])
                     counter += 1
                     bar.update(counter, message = ticker)
                 except:
@@ -167,7 +168,14 @@ def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5, 7]):
         else:
             counter += 1 * len(widths)
 
-    print(sorted(profits, key=lambda x: x[0]))
+    profits = sorted(profits, key=lambda x: x[1])
+
+    for p in profits:
+        if p[1] > 5 and p[3] < .25:
+            print(p[0] + "--------")
+            print("     ExpRet: " + str(p[1]) + "%")
+            print("     Chance of Loss: " + str(round(p[3] * 100, 2)) + "%")
+            print("     Width: " + str(p[2]) + "%")
 
 def isMarketOpen():
     d = datetime.datetime.now()
