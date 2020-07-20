@@ -2,30 +2,37 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import pandas as pd
 import math, datetime, statistics
+from bar import ProgressBar
 from scipy.stats import *
 
 STOCKLIST = ['MSFT', 'BAC', 'SPY', 'DIS', 'AMD', 'T', 'WMT', 'AMZN',
-                    'NFLX', 'PFE', 'JPM', 'GOOGL', 'XOM', 'PEP', 'BA', 'WFC',
-                     'NVDA', 'GDX', 'XLF', 'UAL', 'XLE', 'BABA', 'INTC', 'KO',
-                      'HAL', 'GOLD', 'CVS', 'UNH', 'MCD', 'GS', 'C']
+             'NFLX', 'PFE', 'JPM', 'GOOGL', 'XOM', 'PEP', 'BA', 'WFC',
+             'NVDA', 'GDX', 'XLF', 'UAL', 'XLE', 'BABA', 'INTC', 'KO',
+             'HAL', 'GOLD', 'CVS', 'UNH', 'MCD', 'GS', 'C', 'AAL', 'TSLA',
+             'SPCE', 'AAPL', 'NKLA', 'DAL', 'TWTR', 'FB', 'SNAP', 'MU', 'UBER',
+             'DKNG', 'F', 'GM', 'NOK', 'SLV', 'AZN', 'V', 'JNJ', 'HD', 'CRM',
+             'NKE', 'BP', 'PLUG']
+
+EARNINGS_WEEK = ['MSFT', 'AMD', 'INTC', 'GOOGL', 'KO', 'SNAP', 'T', 'TWTR']
 
 def divide_chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def ironCondorAvgReturn(t, percent, pd, can_print, days_until_exp):
+def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, days_until_exp = 5, pricetype = ''):
 
     ticker = yf.Ticker(t)
     hist = [i[3] for i in ticker.history(period=pd).to_numpy()]
     current_price = [i[3] for i in ticker.history(period='1d').to_numpy()][0]
 
-    calls = ticker.option_chain('2020-07-16').calls.to_dict()
-    puts = ticker.option_chain('2020-07-16').puts.to_dict()
+    chain = ticker.option_chain(expdate)
+    calls = chain.calls.to_dict()
+    puts = chain.puts.to_dict()
 
-    percent = (percent / 100)
+    width = (width / 100)
 
-    upper_bound_price = current_price * (1 + percent)
-    lower_bound_price = current_price * (1 - percent)
+    upper_bound_price = current_price * (1 + width)
+    lower_bound_price = current_price * (1 - width)
 
 
     # Find CLosest Strike Prices to Percent Given
@@ -48,10 +55,17 @@ def ironCondorAvgReturn(t, percent, pd, can_print, days_until_exp):
     low_put_strike = puts['strike'][lowest_dif_put[1] - 1]
 
     # Get Premiums
-    low_call_premium = calls['bid'][lowest_dif_call[1]]
-    high_call_premium = calls['ask'][lowest_dif_call[1] + 1]
-    low_put_premium = puts['ask'][lowest_dif_put[1] - 1]
-    high_put_premium = puts['bid'][lowest_dif_put[1]]
+    if pricetype == 'bid/ask':
+        low_call_premium = calls['bid'][lowest_dif_call[1]]
+        high_call_premium = calls['ask'][lowest_dif_call[1] + 1]
+        low_put_premium = puts['ask'][lowest_dif_put[1] - 1]
+        high_put_premium = puts['bid'][lowest_dif_put[1]]
+
+    else:
+        low_call_premium = calls['lastPrice'][lowest_dif_call[1]]
+        high_call_premium = calls['lastPrice'][lowest_dif_call[1] + 1]
+        low_put_premium = puts['lastPrice'][lowest_dif_put[1] - 1]
+        high_put_premium = puts['lastPrice'][lowest_dif_put[1]]
 
     # Get Volumes
     low_call_vol = calls['volume'][lowest_dif_call[1]]
@@ -116,7 +130,7 @@ def ironCondorAvgReturn(t, percent, pd, can_print, days_until_exp):
         print("     Max Loss: $" + str(abs(round(max_loss, 2))))
         print("     Average Return: $" + str(round(average_total, 5)))
         print("     Percentage Kept: " + str(round(average_total * 100 / max_profit, 2)) + "%")
-        print("     Return on $1000 investment: " + str(round(math.floor(-1000 / max_loss) * average_total / 10, 2)) + "%")
+        print("     Return on investment: " + str(round(average_total * -100 / max_loss, 2)) + "%")
 
     return [average_total, max_loss]
 
@@ -133,16 +147,25 @@ def showPlot(t, r, pd):
     plt.plot(percent, profits)
     plt.show()
 
-def runList(stocks_to_screen, days_until_exp):
+def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5, 7]):
     profits = []
 
+    counter = 0
+    m = len(stocks_to_screen) * len(widths)
+    bar = ProgressBar(0, m)
+
     for ticker in stocks_to_screen:
-        print(ticker)
-        for i in [5, 7]:
-            k = ironCondorAvgReturn(ticker, i, '3mo', False, days_until_exp)
-            num_pos = math.floor(-1000 / k[1])
-            ret = num_pos * k[0]
-            profits.append([round(ret / 10, 3), i, ticker])
+        if ticker not in EARNINGS_WEEK:
+            for i in widths:
+                try:
+                    k = ironCondorAvgReturn(ticker, expdate, width = i, can_print = False, days_until_exp = days_until_exp)
+                    profits.append([round(k[0] * -100 / k[1], 2), i, ticker])
+                    counter += 1
+                    bar.update(counter, message = ticker)
+                except:
+                    counter += 1;
+        else:
+            counter += 1 * len(widths)
 
     print(sorted(profits, key=lambda x: x[0]))
 
