@@ -11,22 +11,30 @@ STOCKLIST = ['MSFT', 'BAC', 'SPY', 'DIS', 'AMD', 'T', 'WMT', 'AMZN',
              'HAL', 'GOLD', 'CVS', 'UNH', 'MCD', 'GS', 'C', 'AAL', 'TSLA',
              'SPCE', 'AAPL', 'NKLA', 'DAL', 'TWTR', 'FB', 'SNAP', 'MU', 'UBER',
              'DKNG', 'F', 'GM', 'NOK', 'SLV', 'AZN', 'V', 'JNJ', 'HD', 'CRM',
-             'NKE', 'BP', 'PLUG']
+             'NKE', 'BP', 'PLUG', 'IBM']
 
-EARNINGS_WEEK = ['MSFT', 'AMD', 'INTC', 'GOOGL', 'KO', 'SNAP', 'T', 'TWTR',
-                'AZN', 'AMZN', 'UNH']
+EARNINGS_WEEK = []
 
 def divide_chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, days_until_exp = 5, pricetype = ''):
-
+def get_data(t, pd, expdate):
     ticker = yf.Ticker(t)
     hist = [i[3] for i in ticker.history(period=pd).to_numpy()]
     current_price = [i[3] for i in ticker.history(period='1d').to_numpy()][0]
 
     chain = ticker.option_chain(expdate)
+    return hist, current_price, chain
+
+def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, days_until_exp = 5, pricetype = '', data = []):
+
+    if len(data) >= 1:
+        hist = data[0]
+        current_price = data[1]
+        chain = data[2]
+    else:
+        hist, current_price, chain = get_data(t, pd, expdate)
     calls = chain.calls.to_dict()
     puts = chain.puts.to_dict()
 
@@ -126,7 +134,7 @@ def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, day
         print("\n     Average Weekly Change (" + pd + "): " + str(round(avg * 100, 2)) + "%")
         print("     Standard Deviation: " + str(round(stdev * 100, 2)) + "%")
         print("     Percent Change to Lose: " + str(round(100 * lower_bound_percent, 2)) + "% or +" + str(round(100 * upper_bound_percent, 2)) + "%")
-        print("     Chance to lose: " + str(round(chance_of_loss * 100, 3)) + "%")
+        print("     Chance to lose: " + str(round(chance_of_loss * 100, 4)) + "%")
         print("     Premium Recieved: $" + str(max_profit))
         print("     Max Loss: $" + str(abs(round(max_loss, 2))))
         print("     Average Return: $" + str(round(average_total, 5)))
@@ -148,7 +156,7 @@ def showPlot(t, r, pd):
     plt.plot(percent, profits)
     plt.show()
 
-def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5, 7]):
+def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5]):
     profits = []
 
     counter = 0
@@ -157,9 +165,10 @@ def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5, 7]):
 
     for ticker in stocks_to_screen:
         if ticker not in EARNINGS_WEEK:
+            a, b, c = get_data(ticker, '3mo', expdate)
             for i in widths:
                 try:
-                    k = ironCondorAvgReturn(ticker, expdate, width = i, can_print = False, days_until_exp = days_until_exp)
+                    k = ironCondorAvgReturn(ticker, expdate, width = i, can_print = False, days_until_exp = days_until_exp, data = [a, b, c])
                     profits.append([ticker, round(k['average_total'] * -100 / k['max_loss'], 2), i, k['chance_of_loss']])
                     counter += 1
                     bar.update(counter, message = ticker)
@@ -168,13 +177,13 @@ def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5, 7]):
         else:
             counter += 1 * len(widths)
 
-    profits = sorted(profits, key=lambda x: x[1])
+    profits = sorted(profits, key=lambda x: x[1] * (1 - x[3]))
 
     for p in profits:
         if p[1] > 5 and p[3] < .25:
             print(p[0] + "--------")
             print("     ExpRet: " + str(p[1]) + "%")
-            print("     Chance of Loss: " + str(round(p[3] * 100, 2)) + "%")
+            print("     Chance of Loss: " + str(round(p[3] * 100, 4)) + "%")
             print("     Width: " + str(p[2]) + "%")
 
 def isMarketOpen():
