@@ -13,7 +13,8 @@ STOCKLIST = ['MSFT', 'BAC', 'SPY', 'DIS', 'AMD', 'T', 'WMT', 'AMZN',
              'DKNG', 'F', 'GM', 'NOK', 'SLV', 'AZN', 'V', 'JNJ', 'HD', 'CRM',
              'NKE', 'BP', 'PLUG', 'IBM']
 
-EARNINGS_WEEK = []
+EARNINGS_WEEK = ['GOOGL', 'AMD', 'FB', 'V', 'AAPL', 'PFE', 'GM', 'MCD',
+                 'AMZN']
 
 def divide_chunks(l, n):
     for i in range(0, len(l), n):
