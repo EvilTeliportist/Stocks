@@ -11,12 +11,17 @@ STOCKLIST = ['MSFT', 'BAC', 'SPY', 'DIS', 'AMD', 'T', 'WMT', 'AMZN',
              'HAL', 'GOLD', 'CVS', 'UNH', 'MCD', 'GS', 'C', 'AAL', 'TSLA',
              'SPCE', 'AAPL', 'NKLA', 'DAL', 'TWTR', 'FB', 'SNAP', 'MU', 'UBER',
              'DKNG', 'F', 'GM', 'NOK', 'SLV', 'AZN', 'V', 'JNJ', 'HD', 'CRM',
-             'NKE', 'BP', 'PLUG', 'IBM']
+             'NKE', 'BP', 'PLUG', 'IBM', 'GE', 'NIO', 'PBR']
 
-EARNINGS_WEEK = ['GOOGL', 'AMD', 'FB', 'V', 'AAPL', 'PFE', 'GM', 'MCD',
-                 'AMZN']
+EARNINGS_WEEK = ['CVS', 'UBER', 'DIS', 'BP', 'PLUG']
 
-def divide_chunks(l, n):
+def isMarketOpen():
+    d = datetime.datetime.now()
+    weekday = d.isoweekday() in range(1, 6)
+    hour = ((d.hour * 100) + d.minute) > 930 and d.hour < 16
+    return weekday and hour
+
+def list_to_chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
@@ -30,17 +35,21 @@ def get_data(t, pd, expdate):
 
 def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, days_until_exp = 5, pricetype = '', data = []):
 
+    # Avoid getting repeated data for same ticker different widths
     if len(data) >= 1:
         hist = data[0]
         current_price = data[1]
         chain = data[2]
     else:
         hist, current_price, chain = get_data(t, pd, expdate)
+
+    # Get Calls and Puts from options chain API call
     calls = chain.calls.to_dict()
     puts = chain.puts.to_dict()
 
     width = (width / 100)
 
+    # Determine Option Price Targets
     upper_bound_price = current_price * (1 + width)
     lower_bound_price = current_price * (1 - width)
 
@@ -58,13 +67,13 @@ def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, day
         if dif < lowest_dif_put[0]:
             lowest_dif_put = [dif, i]
 
-    # Get Strike Prices
+    # Get Strike Prices of those options
     low_call_strike = calls['strike'][lowest_dif_call[1]]
     high_call_strike = calls['strike'][lowest_dif_call[1] + 1]
     high_put_strike = puts['strike'][lowest_dif_put[1]]
     low_put_strike = puts['strike'][lowest_dif_put[1] - 1]
 
-    # Get Premiums
+    # Get Premiums of those options
     if pricetype == 'bid/ask':
         low_call_premium = calls['bid'][lowest_dif_call[1]]
         high_call_premium = calls['ask'][lowest_dif_call[1] + 1]
@@ -77,21 +86,24 @@ def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, day
         low_put_premium = puts['lastPrice'][lowest_dif_put[1] - 1]
         high_put_premium = puts['lastPrice'][lowest_dif_put[1]]
 
-    # Get Volumes
+    # Get Volumes of those options
     low_call_vol = calls['volume'][lowest_dif_call[1]]
     high_call_vol = calls['volume'][lowest_dif_call[1] + 1]
     low_put_vol = puts['volume'][lowest_dif_put[1] - 1]
     high_put_vol = puts['volume'][lowest_dif_put[1]]
+    min_vol = min(low_call_vol, high_call_vol, low_put_vol, high_put_vol)
 
-    # Calculate Profits and Loss
+    # Calculate max profits and losses
     cost_to_open = low_call_premium + high_put_premium - low_put_premium - high_call_premium
     max_profit = round(cost_to_open * 100, 2)
     max_loss = cost_to_open - max((high_put_strike - low_put_strike), (high_call_strike - low_call_strike))
     max_loss *= 100
 
+    # Calculate breakeven points
     upper_break = low_call_strike + cost_to_open
     lower_break = high_put_strike - cost_to_open
 
+    # Calculate Breakeven Percentages
     upper_bound_percent = (upper_break - current_price) / current_price
     lower_bound_percent = (lower_break - current_price) / current_price
 
@@ -101,7 +113,7 @@ def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, day
         change = (hist[i+1] - hist[i]) / hist[i]
         changes.append(change)
 
-    chunks = list(divide_chunks(changes, 5))
+    chunks = list(list_to_chunks(changes, 5))
     if len(chunks[-1]) != 5:
         chunks = chunks[:-1]
     weekly = []
@@ -115,16 +127,18 @@ def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, day
     # Create Normal Distribution
     dist = norm(avg, stdev)
 
+    # Find chance of stock going outside of percentage bounds
     chance_of_lower = dist.cdf(lower_bound_percent)
     chance_of_higher = 1 - dist.cdf(upper_bound_percent)
-
     chance_of_loss = chance_of_lower + chance_of_higher
 
+    # Calculate average return
     average_loss = max_loss * chance_of_loss
     average_gain = (1 - chance_of_loss) * max_profit
-
     average_total = average_loss + average_gain
 
+
+    # Print out a bunch of info
     if can_print:
         print(t + ": $" + str(round(current_price, 2)) + "  ------- IRON CONDOR")
         print("     Spread Info")
@@ -142,20 +156,7 @@ def ironCondorAvgReturn(t, expdate, width = 5, pd = '3mo', can_print = True, day
         print("     Percentage Kept: " + str(round(average_total * 100 / max_profit, 2)) + "%")
         print("     Return on investment: " + str(round(average_total * -100 / max_loss, 2)) + "%")
 
-    return {'Ticker': t, 'average_total': average_total, 'max_loss': max_loss, 'chance_of_loss': chance_of_loss}
-
-def showPlot(t, r, pd):
-
-    profits = []
-    percent = []
-    for i in range(r):
-        try:
-            profits.append(ironCondorAvgReturn(t, i + 1, pd))
-            percent.append(i + 1)
-        except:
-            print('error')
-    plt.plot(percent, profits)
-    plt.show()
+    return {'Ticker': t, 'average_total': average_total, 'max_loss': max_loss, 'chance_of_loss': chance_of_loss, 'minimum_volume': min_vol}
 
 def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5]):
     profits = []
@@ -170,7 +171,8 @@ def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5]):
             for i in widths:
                 try:
                     k = ironCondorAvgReturn(ticker, expdate, width = i, can_print = False, days_until_exp = days_until_exp, data = [a, b, c])
-                    profits.append([ticker, round(k['average_total'] * -100 / k['max_loss'], 2), i, k['chance_of_loss']])
+                    if k['minimum_volume'] > 10 and k['average_total'] > 0:
+                        profits.append([ticker, round(k['average_total'] * -100 / k['max_loss'], 2), i, k['chance_of_loss']])
                     counter += 1
                     bar.update(counter, message = ticker)
                 except:
@@ -186,9 +188,3 @@ def runList(stocks_to_screen, expdate, days_until_exp = 5,  widths = [5]):
             print("     ExpRet: " + str(p[1]) + "%")
             print("     Chance of Loss: " + str(round(p[3] * 100, 4)) + "%")
             print("     Width: " + str(p[2]) + "%")
-
-def isMarketOpen():
-    d = datetime.datetime.now()
-    weekday = d.isoweekday() in range(1, 6)
-    hour = ((d.hour * 100) + d.minute) > 930 and d.hour < 16
-    return weekday and hour
