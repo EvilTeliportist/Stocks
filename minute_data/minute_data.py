@@ -36,30 +36,28 @@ tickers = ['MMM', 'ABT', 'ABBV', 'ABMD', 'ACN', 'ATVI', 'ADBE', 'AMD', 'AAP', 'A
 'VIAB', 'V', 'VNO', 'VMC', 'WMT', 'WBA', 'DIS', 'WM', 'WAT', 'WEC', 'WCG', 'WFC', 'WELL', 'WDC', 'WU', 'WRK', 'WY', 'WHR', 'WMB', 'WLTW', 'WYNN',
 'XEL', 'XRX', 'XLNX', 'XYL', 'YUM', 'ZBH', 'ZION', 'ZTS']
 
-# Load data in
-with open('minute_data.json', 'r') as file:
-    data = json.load(file)
+if isMarketOpen():
+    # Load data in
+    with open('minute_data.json', 'r') as file:
+        data = json.load(file)
 
-for ticker in tickers[:50]:
-    count = 1
-    try:
-        page = requests.get('https://finance.yahoo.com/quote/' + ticker)
-        parsed = soup(page.content, 'html.parser')
-        price = float(parsed.find_all('div', class_='D(ib) Mend(20px)')[0].findChildren("span")[0].text)
+    # Make dictionary
+    for ticker in tickers[:50]:
+        try:
+            page = requests.get('https://finance.yahoo.com/quote/' + ticker)
+            parsed = soup(page.content, 'html.parser')
+            price = float(parsed.find_all('div', class_='D(ib) Mend(20px)')[0].findChildren("span")[0].text)
+            print(ticker)
+            time = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M")
+            if ticker in data.keys():
+                if time not in data[ticker].keys():
+                    data[ticker][time] = price
+            else:
+                data[ticker] = {time: price}
 
-        time = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M")
-        if ticker in data.keys():
-            if time not in data[ticker].keys():
-                data[ticker][time] = price
-        else:
-            data[ticker] = {time: price}
+        except:
+            pass
 
-    except:
-        pass
-
-    count += 1
-    bar.update(count, message = ticker)
-
-# Write data out
-with open('minute_data.json', 'w') as file:
-    json.dump(data, file)
+    # Write data out
+    with open('minute_data.json', 'w') as file:
+        json.dump(data, file)
