@@ -1,5 +1,4 @@
 import time, json, requests, datetime
-import yfinance as yf
 from bs4 import BeautifulSoup as soup
 from pyprogbar import ProgressBar
 
@@ -38,11 +37,11 @@ tickers = ['MMM', 'ABT', 'ABBV', 'ABMD', 'ACN', 'ATVI', 'ADBE', 'AMD', 'AAP', 'A
 
 if isMarketOpen():
     # Load data in
-    with open('minute_data.json', 'r') as file:
+    with open('minute_data/minute_data.json', 'r') as file:
         data = json.load(file)
 
     # Make dictionary
-    for ticker in tickers[:50]:
+    for ticker in tickers[:1]:
         try:
             page = requests.get('https://finance.yahoo.com/quote/' + ticker)
             parsed = soup(page.content, 'html.parser')
