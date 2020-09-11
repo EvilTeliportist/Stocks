@@ -1,12 +1,7 @@
-import time, json, requests, datetime
+import requests, os, json, datetime, time, asyncio, aiohttp
 from bs4 import BeautifulSoup as soup
-from pyprogbar import ProgressBar
+from aiohttp import ClientSession
 
-def isMarketOpen():
-    d = datetime.datetime.now()
-    weekday = d.isoweekday() in range(1, 6)
-    hour = ((d.hour * 100) + d.minute) > 930 and d.hour < 16
-    return weekday and hour
 
 tickers = ['MMM', 'ABT', 'ABBV', 'ABMD', 'ACN', 'ATVI', 'ADBE', 'AMD', 'AAP', 'AES', 'AMG', 'AFL', 'A', 'APD', 'AKAM', 'ALK', 'ALB', 'ARE',
 'ALXN', 'ALGN', 'ALLE', 'AGN', 'ADS', 'LNT', 'ALL', 'GOOGL', 'GOOG', 'MO', 'AMZN', 'AEE', 'AAL', 'AEP', 'AXP', 'AIG', 'AMT', 'AWK', 'AMP',
@@ -35,28 +30,40 @@ tickers = ['MMM', 'ABT', 'ABBV', 'ABMD', 'ACN', 'ATVI', 'ADBE', 'AMD', 'AAP', 'A
 'VIAB', 'V', 'VNO', 'VMC', 'WMT', 'WBA', 'DIS', 'WM', 'WAT', 'WEC', 'WCG', 'WFC', 'WELL', 'WDC', 'WU', 'WRK', 'WY', 'WHR', 'WMB', 'WLTW', 'WYNN',
 'XEL', 'XRX', 'XLNX', 'XYL', 'YUM', 'ZBH', 'ZION', 'ZTS']
 
-if isMarketOpen():
-    # Load data in
-    with open('minute_data.json', 'r') as file:
-        data = json.load(file)
+def time():
+    return datetime.datetime.now().strftime("%m/%d/%Y, %H:%M")
 
-    # Make dictionary
-    for ticker in tickers[:50]:
-        try:
-            page = requests.get('https://finance.yahoo.com/quote/' + ticker)
-            parsed = soup(page.content, 'html.parser')
-            price = float(parsed.find_all('div', class_='D(ib) Mend(20px)')[0].findChildren("span")[0].text)
-            print(ticker)
-            time = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M")
-            if ticker in data.keys():
-                if time not in data[ticker].keys():
-                    data[ticker][time] = price
-            else:
-                data[ticker] = {time: price}
+def find_price_from_page(page):
+    print(page)
+    parsed = soup(page.content, 'html.parser')
+    price = float(parsed.find_all('div', class_='D(ib) Mend(20px)')[0].findChildren("span")[0].text)
+    return price
 
-        except:
-            pass
+async def request(session, ticker):
+    url = 'https://finance.yahoo.com/quote/' + ticker
+    response = None
 
-    # Write data out
-    with open('minute_data.json', 'w') as file:
-        json.dump(data, file)
+    with session.get(url) as response:
+        return response
+
+async def main(session, ticker):
+
+    page = await request(session, ticker)
+    price = find_price_from_page(page)
+    t = time()
+
+    print(t + "  :  " + str(price))
+    '''if ticker in data.keys():
+        if time not in data[ticker].keys():
+            data[ticker][time] = price
+    else:
+        data[ticker] = {time: price}'''
+
+
+async def event_loop():
+    async with ClientSession() as session:
+        await asyncio.gather(*[main(session, ticker) for ticker in tickers[:10]])
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(event_loop())
+loop.close()
