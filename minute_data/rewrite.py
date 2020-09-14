@@ -52,18 +52,19 @@ async def main(session, ticker):
     price = find_price_from_page(page)
     t = time()
 
-    print(t + "  :  " + str(price))
-    '''if ticker in data.keys():
+    if ticker in data.keys():
         if time not in data[ticker].keys():
             data[ticker][time] = price
     else:
-        data[ticker] = {time: price}'''
+        data[ticker] = {time: price}
 
 
 async def event_loop():
     async with ClientSession() as session:
-        await asyncio.gather(*[main(session, ticker) for ticker in tickers[:10]])
+        await asyncio.gather(*[main(session, ticker) for ticker in tickers])
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(event_loop())
 loop.close()
+
+print(data)
