@@ -1,0 +1,402 @@
+[
+    {
+        "ticker": "ABCB",
+        "amount": "0.40",
+        "date": "29-Sep-2020",
+        "boughtAt": 22.81,
+        "soldAt": 22.47,
+        "profit": -0.34
+    },
+    {
+        "ticker": "ACRE",
+        "amount": "1.12",
+        "date": "29-Sep-2020",
+        "boughtAt": 9.46,
+        "soldAt": 9.35,
+        "profit": -0.11
+    },
+    {
+        "ticker": "AGNC",
+        "amount": "2.34",
+        "date": "29-Sep-2020",
+        "boughtAt": 14.27,
+        "soldAt": 14.18,
+        "profit": -0.09
+    },
+    {
+        "ticker": "AHH",
+        "amount": "0.79",
+        "date": "29-Sep-2020",
+        "boughtAt": 9.3,
+        "soldAt": 9.24,
+        "profit": -0.06
+    },
+    {
+        "ticker": "ANH",
+        "amount": "0.58",
+        "date": "29-Sep-2020",
+        "boughtAt": 1.69,
+        "soldAt": 1.71,
+        "profit": 0.02
+    },
+    {
+        "ticker": "AQN",
+        "amount": "0.49",
+        "date": "29-Sep-2020",
+        "boughtAt": 14.2,
+        "soldAt": 14.26,
+        "profit": 0.06
+    },
+    {
+        "ticker": "ARE",
+        "amount": "3.66",
+        "date": "29-Sep-2020",
+        "boughtAt": 160.29,
+        "soldAt": 159.52,
+        "profit": -0.77
+    },
+    {
+        "ticker": "ARI",
+        "amount": "1.84",
+        "date": "29-Sep-2020",
+        "boughtAt": 9.05,
+        "soldAt": 8.97,
+        "profit": -0.08
+    },
+    {
+        "ticker": "ATNI",
+        "amount": "0.68",
+        "date": "29-Sep-2020",
+        "boughtAt": 50.79,
+        "soldAt": 50.55,
+        "profit": -0.24
+    },
+    {
+        "ticker": "AUY",
+        "amount": "0.02",
+        "date": "29-Sep-2020",
+        "boughtAt": 5.66,
+        "soldAt": 5.72,
+        "profit": 0.06
+    },
+    {
+        "ticker": "AVB",
+        "amount": "5.83",
+        "date": "29-Sep-2020",
+        "boughtAt": 149.86,
+        "soldAt": 149.34,
+        "profit": -0.52
+    },
+    {
+        "ticker": "BANF",
+        "amount": "0.93",
+        "date": "29-Sep-2020",
+        "boughtAt": 41.55,
+        "soldAt": 41.09,
+        "profit": -0.46
+    },
+    {
+        "ticker": "BCSF",
+        "amount": "0.00",
+        "date": "29-Sep-2020",
+        "boughtAt": 10.45,
+        "soldAt": 10.36,
+        "profit": -0.09
+    },
+    {
+        "ticker": "BEN",
+        "amount": "0.92",
+        "date": "29-Sep-2020",
+        "boughtAt": 20.2,
+        "soldAt": 20.09,
+        "profit": -0.11
+    },
+    {
+        "ticker": "BGS",
+        "amount": "1.88",
+        "date": "29-Sep-2020",
+        "boughtAt": 27.97,
+        "soldAt": 28.06,
+        "profit": 0.09
+    },
+    {
+        "ticker": "BHE",
+        "amount": "0.45",
+        "date": "29-Sep-2020",
+        "boughtAt": 20.39,
+        "soldAt": 20.35,
+        "profit": -0.04
+    },
+    {
+        "ticker": "BXMT",
+        "amount": "2.48",
+        "date": "29-Sep-2020",
+        "boughtAt": 22.55,
+        "soldAt": 22.45,
+        "profit": -0.1
+    },
+    {
+        "ticker": "BXP",
+        "amount": "3.35",
+        "date": "29-Sep-2020",
+        "boughtAt": 81.75,
+        "soldAt": 81.31,
+        "profit": -0.44
+    },
+    {
+        "ticker": "CHMI",
+        "amount": "1.96",
+        "date": "29-Sep-2020",
+        "boughtAt": 9.27,
+        "soldAt": 9.2,
+        "profit": -0.07
+    },
+    {
+        "ticker": "CMO",
+        "amount": "0.60",
+        "date": "29-Sep-2020",
+        "boughtAt": 5.85,
+        "soldAt": 5.88,
+        "profit": 0.03
+    },
+    {
+        "ticker": "COLD",
+        "amount": "0.51",
+        "date": "29-Sep-2020",
+        "boughtAt": 35.89,
+        "soldAt": 35.75,
+        "profit": -0.14
+    },
+    {
+        "ticker": "COR",
+        "amount": "4.02",
+        "date": "29-Sep-2020",
+        "boughtAt": 118.34,
+        "soldAt": 118.85,
+        "profit": 0.51
+    },
+    {
+        "ticker": "CPT",
+        "amount": "3.06",
+        "date": "29-Sep-2020",
+        "boughtAt": 90.14,
+        "soldAt": 89.5,
+        "profit": -0.64
+    },
+    {
+        "ticker": "DDS",
+        "amount": "0.40",
+        "date": "29-Sep-2020",
+        "boughtAt": 31.14,
+        "soldAt": 31.5,
+        "profit": 0.36
+    },
+    {
+        "ticker": "DE",
+        "amount": "2.58",
+        "date": "29-Sep-2020",
+        "boughtAt": 221.14,
+        "soldAt": 221.65,
+        "profit": 0.51
+    },
+    {
+        "ticker": "DEI",
+        "amount": "1.00",
+        "date": "29-Sep-2020",
+        "boughtAt": 25.19,
+        "soldAt": 25.09,
+        "profit": -0.1
+    },
+    {
+        "ticker": "DNP",
+        "amount": "0.78",
+        "date": "29-Sep-2020",
+        "boughtAt": 10.08,
+        "soldAt": 10.07,
+        "profit": -0.01
+    },
+    {
+        "ticker": "EARN",
+        "amount": "1.48",
+        "date": "29-Sep-2020",
+        "boughtAt": 11.31,
+        "soldAt": 11.32,
+        "profit": 0.01
+    },
+    {
+        "ticker": "EDD",
+        "amount": "0.60",
+        "date": "29-Sep-2020",
+        "boughtAt": 5.56,
+        "soldAt": 5.58,
+        "profit": 0.02
+    },
+    {
+        "ticker": "EFC",
+        "amount": "1.64",
+        "date": "29-Sep-2020",
+        "boughtAt": 12.74,
+        "soldAt": 12.62,
+        "profit": -0.12
+    },
+    {
+        "ticker": "EGP",
+        "amount": "2.64",
+        "date": "29-Sep-2020",
+        "boughtAt": 131.62,
+        "soldAt": 131.21,
+        "profit": -0.41
+    },
+    {
+        "ticker": "EIX",
+        "amount": "2.42",
+        "date": "29-Sep-2020",
+        "boughtAt": 51.25,
+        "soldAt": 51.42,
+        "profit": 0.17
+    },
+    {
+        "ticker": "EPRT",
+        "amount": "0.22",
+        "date": "29-Sep-2020",
+        "boughtAt": 18.03,
+        "soldAt": 17.95,
+        "profit": -0.08
+    },
+    {
+        "ticker": "ESS",
+        "amount": "7.33",
+        "date": "29-Sep-2020",
+        "boughtAt": 205.44,
+        "soldAt": 205,
+        "profit": -0.44
+    },
+    {
+        "ticker": "FCPT",
+        "amount": "1.10",
+        "date": "29-Sep-2020",
+        "boughtAt": 25.83,
+        "soldAt": 25.8,
+        "profit": -0.03
+    },
+    {
+        "ticker": "FMC",
+        "amount": "0.66",
+        "date": "29-Sep-2020",
+        "boughtAt": 105.88,
+        "soldAt": 106.14,
+        "profit": 0.26
+    },
+    {
+        "ticker": "FR",
+        "amount": "0.86",
+        "date": "29-Sep-2020",
+        "boughtAt": 40.53,
+        "soldAt": 40.38,
+        "profit": -0.15
+    },
+    {
+        "ticker": "FT",
+        "amount": "0.38",
+        "date": "29-Sep-2020",
+        "boughtAt": 6.81,
+        "soldAt": 6.82,
+        "profit": 0.01
+    },
+    {
+        "ticker": "FTF",
+        "amount": "1.21",
+        "date": "29-Sep-2020",
+        "boughtAt": 8.76,
+        "soldAt": 8.81,
+        "profit": 0.05
+    },
+    {
+        "ticker": "GSBD",
+        "amount": "1.80",
+        "date": "29-Sep-2020",
+        "boughtAt": 15.59,
+        "soldAt": 15.5,
+        "profit": -0.09
+    },
+    {
+        "ticker": "GVA",
+        "amount": "0.52",
+        "date": "29-Sep-2020",
+        "boughtAt": 18.02,
+        "soldAt": 18,
+        "profit": -0.02
+    },
+    {
+        "ticker": "HCFT",
+        "amount": "0.37",
+        "date": "29-Sep-2020",
+        "boughtAt": 2.815,
+        "soldAt": 2.85,
+        "profit": 0.04
+    },
+    {
+        "ticker": "HUM",
+        "amount": "1.90",
+        "date": "29-Sep-2020",
+        "boughtAt": 399.38,
+        "soldAt": 400.59,
+        "profit": 1.21
+    },
+    {
+        "ticker": "IIPR",
+        "amount": "1.10",
+        "date": "29-Sep-2020",
+        "boughtAt": 127.13,
+        "soldAt": 127.06,
+        "profit": -0.07
+    },
+    {
+        "ticker": "IRET",
+        "amount": "0.28",
+        "date": "29-Sep-2020",
+        "boughtAt": 66.39,
+        "soldAt": 66.29,
+        "profit": -0.1
+    },
+    {
+        "ticker": "ITW",
+        "amount": "3.34",
+        "date": "29-Sep-2020",
+        "boughtAt": 194.54,
+        "soldAt": 194.86,
+        "profit": 0.32
+    },
+    {
+        "ticker": "KL",
+        "amount": "0.08",
+        "date": "29-Sep-2020",
+        "boughtAt": 48.56,
+        "soldAt": 48.82,
+        "profit": 0.26
+    },
+    {
+        "ticker": "KRC",
+        "amount": "1.76",
+        "date": "29-Sep-2020",
+        "boughtAt": 52.92,
+        "soldAt": 52.64,
+        "profit": -0.28
+    },
+    {
+        "ticker": "KREF",
+        "amount": "1.63",
+        "date": "29-Sep-2020",
+        "boughtAt": 16.8,
+        "soldAt": 16.77,
+        "profit": -0.03
+    },
+    {
+        "ticker": "KW",
+        "amount": "0.76",
+        "date": "29-Sep-2020",
+        "boughtAt": 14.57,
+        "soldAt": 14.46,
+        "profit": -0.11
+    }
+]
