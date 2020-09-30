@@ -1,4 +1,4 @@
 :loop
-start python minute_data.py
+start python test.py
 timeout /t 60 /nobreak
 goto :loop
